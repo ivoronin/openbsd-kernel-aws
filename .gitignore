@@ -1,0 +1,9 @@
+.packer.d/
+.superpowers/
+iso/
+output/
+tmp/
+*.log
+*.tgz
+*.img
+*.iso
