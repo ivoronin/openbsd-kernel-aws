@@ -1,0 +1,735 @@
+#	$OpenBSD: GENERIC,v 1.538 2026/01/10 16:12:36 kettenis Exp $
+#
+# For further information on compiling OpenBSD kernels, see the config(8)
+# man page.
+#
+# For further information on hardware support for this architecture, see
+# the intro(4) man page.  For further information about kernel options
+# for this architecture, see the options(4) man page.  For an explanation
+# of each device driver in this file see the section 4 man page for the
+# device.
+
+machine		amd64
+include		"../../../conf/GENERIC"
+maxusers	80			# estimated number of users
+
+option		USER_PCICONF	# user-space PCI configuration
+
+# disabled for AWS: option		APERTURE	# in-kernel aperture driver for XFree86
+option		MTRR		# CPU memory range attributes control
+
+option		NTFS		# NTFS support
+# disabled for AWS: option		SUSPEND
+# disabled for AWS: option		HIBERNATE
+
+config		bsd	swap generic
+
+mainbus0 at root
+
+bios0	at mainbus?
+cpu0	at mainbus?
+ioapic*	at mainbus?
+isa0	at mainbus0
+isa0	at pcib?
+isa0	at amdpcib?
+isa0	at tcpcib?
+pci*	at mainbus0
+vmm0	at mainbus0
+pvbus0	at mainbus0
+
+acpi0		at bios0
+acpitimer*	at acpi?
+acpihpet*	at acpi?
+# disabled for AWS: acpiac*		at acpi?
+# disabled for AWS: acpibat*	at acpi?
+acpibtn*	at acpi?
+acpicpu*	at acpi?
+acpicmos*	at acpi?
+# disabled for AWS: acpidock*	at acpi?
+acpidmar0	at acpi? disable
+acpiec*		at acpi?
+# disabled for AWS: acpihid*	at acpi?
+acpipci*	at acpi?
+acpiprt*	at acpi?
+# disabled for AWS: acpisbs*	at acpi?
+# disabled for AWS: acpitz*		at acpi?
+acpimadt0	at acpi?
+acpimcfg*	at acpi?
+# disabled for AWS: acpiasus*	at acpi?
+# disabled for AWS: acpisony*	at acpi?
+# disabled for AWS: acpithinkpad*	at acpi?
+# disabled for AWS: acpitoshiba*	at acpi?
+# disabled for AWS: acpivideo*	at acpi?
+# disabled for AWS: acpivout*	at acpivideo?
+# disabled for AWS: acpipwrres*	at acpi?
+# disabled for AWS: aibs*		at acpi?
+# disabled for AWS: amdgpio*	at acpi?
+# disabled for AWS: aplgpio*	at acpi?
+# disabled for AWS: bytgpio*	at acpi?
+# disabled for AWS: chvgpio*	at acpi?
+com0		at acpi? addr 0x3f8
+com1		at acpi? addr 0x2f8
+com2		at acpi? addr 0x3e8
+com3		at acpi? addr 0x2e8
+com*		at acpi?
+# disabled for AWS: glkgpio*	at acpi?
+# disabled for AWS: pchgpio*	at acpi?
+# disabled for AWS: sdhc*		at acpi?
+# disabled for AWS: acpicbkbd*	at acpi?
+# disabled for AWS: acpials*	at acpi?
+# disabled for AWS: abl*		at acpi?	# Apple Backlight
+# disabled for AWS: asmc*		at acpi?	# Apple SMC
+tpm*		at acpi?
+# disabled for AWS: acpihve*	at acpi?
+# disabled for AWS: acpisurface*	at acpi?
+# disabled for AWS: inthid*		at acpi?
+ipmi0		at acpi? disable
+# disabled for AWS: ccpmic*		at iic?
+# disabled for AWS: tipmic*		at iic?
+# disabled for AWS: intelpmc*	at acpi?
+# disabled for AWS: amdpmc*		at acpi?
+# disabled for AWS: pckbc*		at acpi?
+
+efi0		at bios0
+mpbios0		at bios0
+
+ipmi0	at mainbus? disable	# IPMI
+
+# disabled for AWS: vmt0	at pvbus?		# VMware Tools
+pvclock0 at pvbus?		# KVM pvclock
+
+# disabled for AWS: xen0	at pvbus?		# Xen HVM domU
+# disabled for AWS: xnf*	at xen?			# Xen Netfront
+# disabled for AWS: xbf*	at xen?			# Xen Blkfront
+
+# disabled for AWS: hyperv0	at pvbus?		# Hyper-V guest
+# disabled for AWS: hvn*	at hyperv?		# Hyper-V NetVSC
+# disabled for AWS: hvs*	at hyperv?		# Hyper-V StorVSC
+
+option		PCIVERBOSE
+# disabled for AWS: option		USBVERBOSE
+
+pchb*	at pci?			# PCI-Host bridges
+aapic*	at pci?			# AMD 8131 IO apic
+ppb*	at pci?			# PCI-PCI bridges
+pci*	at ppb?
+pci*	at pchb?
+pcib*	at pci?			# PCI-ISA bridge
+amdpcib* at pci?		# AMD 8111 LPC bridge
+tcpcib*	at pci?			# Intel Atom E600 LPC bridge
+# disabled for AWS: kate*	at pci?			# AMD K8 temperature sensor
+# disabled for AWS: km*	at pci?			# AMD K10 temperature sensor
+# disabled for AWS: ksmn*	at pci?			# AMD K17 temperature sensor
+# disabled for AWS: amas*	at pci? disable		# AMD memory configuration
+# disabled for AWS: pchtemp* at pci?		# Intel C610 temperature sensor
+# disabled for AWS: ccp*	at pci?			# AMD Cryptographic Co-processor
+# disabled for AWS: psp*	at ccp?			# AMD Platform Security Processor
+
+# National Semiconductor LM7[89] and compatible hardware monitors
+# disabled for AWS: lm0	at isa? port 0x290
+#lm1	at isa? port 0x280
+#lm2	at isa? port 0x310
+
+# disabled for AWS: it*	at isa? port 0x2e	# ITE IT8705F, IT8712F, IT8716F, IT8718F,
+# disabled for AWS: it*	at isa? port 0x4e	# IT8726F and SiS SiS950 monitors and
+				# watchdog timer
+
+# disabled for AWS: schsio*	at isa? port 0x2e	# SMSC SCH311x Super I/O
+# disabled for AWS: schsio*	at isa? port 0x4e
+# disabled for AWS: schsio*	at isa? port 0x162e
+# disabled for AWS: schsio*	at isa? port 0x164e
+
+#viasio* at isa? port 0x2e flags 0x0000	# VIA VT1211 LPC Super I/O
+#viasio* at isa? port 0x4e flags 0x0000
+
+# disabled for AWS: wbsio*	at isa? port 0x2e	# Winbond LPC Super I/O
+# disabled for AWS: wbsio*	at isa? port 0x4e
+# disabled for AWS: lm*	at wbsio?
+# disabled for AWS: uguru0	at isa? disable port 0xe0	# ABIT uGuru
+
+# disabled for AWS: aps0	at isa? port 0x1600		# ThinkPad Active Protection System
+
+# disabled for AWS: piixpm*	at pci?			# Intel PIIX PM
+# disabled for AWS: iic*	at piixpm?
+# disabled for AWS: ichiic*	at pci?			# Intel ICH SMBus controller
+# disabled for AWS: iic*	at ichiic?
+# disabled for AWS: viapm*	at pci?			# VIA SMBus controller
+# disabled for AWS: iic*	at viapm?
+# disabled for AWS: amdiic* at pci?			# AMD-8111 SMBus controller
+# disabled for AWS: iic*	at amdiic?
+# disabled for AWS: nviic*	at pci?			# NVIDIA nForce2/3/4 SMBus controller
+# disabled for AWS: iic*	at nviic?
+# disabled for AWS: amdpm*	at pci?			# AMD-7xx/8111 and NForce SMBus controller
+# disabled for AWS: iic*	at amdpm?
+dwiic*	at acpi?		# DesignWare Synopsys i2c controller
+# disabled for AWS: dwiic*	at pci?
+iic*	at dwiic?
+# disabled for AWS: iosf*	at acpi?		# Intel OnChip System Fabric
+# disabled for AWS: iosf*	at pci?
+
+# disabled for AWS: itherm*	at pci?			# Intel 3400 Thermal Sensor
+# disabled for AWS: adc*	at iic?			# Analog Devices AD7416/AD7417/7418
+# disabled for AWS: adl*	at iic?			# Andigilog aSC7621
+# disabled for AWS: admtemp* at iic?		# Analog Devices ADM1021
+# disabled for AWS: admlc*	at iic?			# Analog Devices ADM1024
+# disabled for AWS: admtm*	at iic?			# Analog Devices ADM1025
+# disabled for AWS: admcts*	at iic?			# Analog Devices ADM1026
+# disabled for AWS: admtmp*	at iic?			# Analog Devices ADM1030
+# disabled for AWS: admtt*	at iic?			# Analog Devices ADM1031
+# disabled for AWS: adt*	at iic?			# Analog Devices ADT7460
+# disabled for AWS: andl*	at iic?			# Andigilog aSC7611
+# disabled for AWS: bgw*	at iic?			# Bosch BMC150 6-axis eCompass
+# disabled for AWS: lisa*	at iic?			# STMicroelectronics LIS331DL motion sensor
+# disabled for AWS: lm*	at iic?			# National Semiconductor LM78/79
+# disabled for AWS: lmenv*	at iic?			# National Semiconductor LM87
+# disabled for AWS: lmtemp*	at iic?			# National Semiconductor LM75/LM77
+# disabled for AWS: lmn*	at iic?			# National Semiconductor LM93
+# disabled for AWS: maxds*	at iic?			# Maxim DS1631
+# disabled for AWS: maxtmp*	at iic?			# Maxim MAX6642/MAX6690
+# disabled for AWS: spdmem*	at iic?			# SPD memory eeproms
+# disabled for AWS: sdtemp*	at iic?			# SO-DIMM (JC-42.4) temperature
+# disabled for AWS: wbng*	at iic?			# Winbond W83793G
+# disabled for AWS: nvt*	at iic?			# Novoton W83795G
+# disabled for AWS: ihidev*	at iic?			# HID-over-i2c
+# disabled for AWS: ims*	at ihidev?		# HID-over-i2c mouse/trackpad
+# disabled for AWS: wsmouse* at ims? mux 0
+# disabled for AWS: ikbd*	at ihidev?		# i2c keyboard
+# disabled for AWS: wskbd*	at ikbd? mux 1
+# disabled for AWS: imt*	at ihidev?		# HID-over-i2c multitouch trackpad
+# disabled for AWS: wsmouse* at imt? mux 0
+# disabled for AWS: iatp* at iic?			# Atmel maXTouch i2c touchpad/touchscreen
+# disabled for AWS: wsmouse* at iatp? mux 0
+# disabled for AWS: ietp* at iic?			# Elantech touchpad
+# disabled for AWS: wsmouse* at ietp? mux 0
+# disabled for AWS: icc*	at ihidev?		# Consumer Control keyboards
+# disabled for AWS: wskbd*	at icc? mux 1
+
+# disabled for AWS: skgpio0 at isa? port 0x680	# Soekris net6501 GPIO and LEDs
+# disabled for AWS: gpio* at skgpio?
+
+# disabled for AWS: ispi*	at acpi?		# Intel LPSS SPI controller
+# disabled for AWS: ispi*	at pci?
+
+#option PCMCIAVERBOSE
+
+# PCI PCMCIA controllers
+#pcic*	at pci?
+
+# PCMCIA bus support
+#pcmcia*	at pcic?
+
+# CardBus bus support
+# disabled for AWS: cbb*		at pci?
+# disabled for AWS: cardslot*	at cbb?
+# disabled for AWS: cardbus*	at cardslot?
+# disabled for AWS: pcmcia*		at cardslot?
+
+# USB Controllers
+# disabled for AWS: xhci*	at pci?			# eXtensible Host Controller
+# disabled for AWS: ehci*	at pci?			# Enhanced Host Controller
+# disabled for AWS: ehci*	at cardbus?		# Enhanced Host Controller
+# disabled for AWS: uhci*	at pci?			# Universal Host Controller (Intel)
+# disabled for AWS: uhci*	at cardbus?		# Universal Host Controller (Intel)
+# disabled for AWS: ohci*	at pci?			# Open Host Controller
+# disabled for AWS: ohci*	at cardbus?		# Open Host Controller
+# disabled for AWS: nhi*	at pci?			# USB4 Host Controller
+
+# USB bus support
+# disabled for AWS: usb*	at xhci?
+# disabled for AWS: usb*	at ehci?
+# disabled for AWS: usb*	at uhci?
+# disabled for AWS: usb*	at ohci?
+
+# USB devices
+# disabled for AWS: uhub*	at usb?			# USB Hubs
+# disabled for AWS: uhub*	at uhub?		# USB Hubs
+# disabled for AWS: urng*	at uhub?		# USB Random Number Generator
+# disabled for AWS: uonerng* at uhub?		# Moonbase Otago OneRNG
+# disabled for AWS: umodem*	at uhub?		# USB Modems/Serial
+# disabled for AWS: ucom*	at umodem?
+# disabled for AWS: uvisor*	at uhub?		# Handspring Visor
+# disabled for AWS: ucom*	at uvisor?
+# disabled for AWS: uvscom*	at uhub?		# SUNTAC Slipper U VS-10U serial
+# disabled for AWS: ucom*	at uvscom?
+# disabled for AWS: ubsa*	at uhub?		# Belkin serial adapter
+# disabled for AWS: ucom*	at ubsa?
+# disabled for AWS: ukspan* at uhub?		# Keyspan USA19HS serial adapter
+# disabled for AWS: ucom*	at ukspan?
+# disabled for AWS: uftdi*	at uhub?		# FTDI FT8U100AX serial adapter
+# disabled for AWS: ucom*	at uftdi?
+# disabled for AWS: uplcom* at uhub?		# I/O DATA USB-RSAQ2 serial adapter
+# disabled for AWS: ucom*	at uplcom?
+# disabled for AWS: umct*	at uhub?		# MCT USB-RS232 serial adapter
+# disabled for AWS: ucom*	at umct?
+# disabled for AWS: uslcom*	at uhub?		# Silicon Laboratories CP210x serial
+# disabled for AWS: ucom*	at uslcom?
+# disabled for AWS: uscom*	at uhub?		# Simple USB serial adapters
+# disabled for AWS: ucom*	at uscom?
+# disabled for AWS: ucrcom*	at uhub?		# Chromebook serial
+# disabled for AWS: ucom*	at ucrcom?
+# disabled for AWS: uark*	at uhub?		# Arkmicro ARK3116 serial
+# disabled for AWS: ucom*	at uark?
+# disabled for AWS: moscom*	at uhub?		# MosChip MCS7703 serial
+# disabled for AWS: ucom*	at moscom?
+# disabled for AWS: umcs*	at uhub?		# MosChip MCS78x0 serial
+# disabled for AWS: ucom*	at umcs?
+# disabled for AWS: uipaq*	at uhub?		# iPAQ serial adapter
+# disabled for AWS: ucom*	at uipaq?
+# disabled for AWS: umsm*	at uhub?		# Qualcomm MSM EVDO
+# disabled for AWS: ucom*	at umsm?
+# disabled for AWS: uchcom*	at uhub?		# WinChipHead CH341/340 serial
+# disabled for AWS: ucom*	at uchcom?
+# disabled for AWS: uticom*	at uhub?		# TI serial
+# disabled for AWS: ucom*	at uticom?
+# disabled for AWS: uxrcom*	at uhub?		# Exar XR21V1410 serial
+# disabled for AWS: ucom*	at uxrcom?
+# disabled for AWS: uaudio* at uhub?		# USB Audio
+# disabled for AWS: audio*	at uaudio?
+# disabled for AWS: umidi*	at uhub?		# USB MIDI
+# disabled for AWS: midi*	at umidi?
+# disabled for AWS: ulpt*	at uhub?		# USB Printers
+# disabled for AWS: umass*	at uhub?		# USB Mass Storage devices
+# disabled for AWS: ubcmtp*	at uhub?		# Broadcom USB trackpad
+# disabled for AWS: wsmouse* at ubcmtp? mux 0
+# disabled for AWS: uhidev*	at uhub?		# Human Interface Devices
+# disabled for AWS: ums*	at uhidev?		# USB mouse
+# disabled for AWS: wsmouse* at ums? mux 0
+# disabled for AWS: umt*	at uhidev?		# USB multitouch touchpad
+# disabled for AWS: wsmouse* at umt? mux 0
+# disabled for AWS: uts*	at uhub?		# USB touchscreen
+# disabled for AWS: wsmouse* at uts? mux 0
+# disabled for AWS: uwacom*	at uhidev?		# USB Wacom tablet
+# disabled for AWS: wsmouse* at uwacom? mux 0
+# disabled for AWS: ukbd*	at uhidev?		# USB keyboard
+# disabled for AWS: wskbd*	at ukbd? mux 1
+# disabled for AWS: ucycom*	at uhidev?			# Cypress serial
+# disabled for AWS: ucom*	at ucycom?
+# disabled for AWS: uslhcom* at uhidev?		# Silicon Labs CP2110 USB HID UART
+# disabled for AWS: ucom*	at uslhcom?
+# disabled for AWS: uhid*	at uhidev?		# USB generic HID support
+# disabled for AWS: fido*	at uhidev?		# FIDO/U2F security key support
+# disabled for AWS: ucc*	at uhidev?		# Consumer Control keyboards
+# disabled for AWS: wskbd*	at ucc? mux 1
+# disabled for AWS: ujoy*	at uhidev?		# USB joystick/gamecontroller support
+# disabled for AWS: uhidpp*	at uhidev?		# Logitech HID++ Devices
+# disabled for AWS: upd*	at uhidev?		# USB Power Devices sensors
+# disabled for AWS: umstc*	at uhidev?		# Microsoft Surface Type Cover
+# disabled for AWS: aue*	at uhub?		# ADMtek AN986 Pegasus Ethernet
+# disabled for AWS: atu*	at uhub?		# Atmel AT76c50x based 802.11b
+# disabled for AWS: axe*	at uhub?		# ASIX Electronics AX88172 USB Ethernet
+# disabled for AWS: axen*	at uhub?		# ASIX Electronics AX88179 USB Ethernet
+# disabled for AWS: cue*	at uhub?		# CATC USB-EL1201A based Ethernet
+# disabled for AWS: kue*	at uhub?		# Kawasaki KL5KUSB101B based Ethernet
+# disabled for AWS: smsc*	at uhub?		# SMSC LAN95xx Ethernet
+# disabled for AWS: cdce*	at uhub?		# CDC Ethernet
+# disabled for AWS: urndis*	at uhub?		# Remote NDIS Ethernet
+# disabled for AWS: upl*	at uhub?		# Prolific PL2301/PL2302 host-to-host `network'
+# disabled for AWS: ugl*	at uhub?		# Genesys Logic GL620USB-A host-to-host `network'
+# disabled for AWS: udav*	at uhub?		# Davicom DM9601 based Ethernet
+# disabled for AWS: mos*	at uhub?		# MOSCHIP MCS7730/7830 10/100 Ethernet
+# disabled for AWS: mue*	at uhub?		# Microchip LAN75xx/LAN78xx Ethernet
+# disabled for AWS: url*	at uhub?		# Realtek RTL8150L based adapters
+# disabled for AWS: ure*	at uhub?		# Realtek RTL8152 based adapters
+# disabled for AWS: uaq*	at uhub?		# Aquantia AQC111U/AQC112U based adapters
+# disabled for AWS: wi*	at uhub?		# WaveLAN IEEE 802.11DS
+# disabled for AWS: udsbr*	at uhub?		# D-Link DSB-R100 radio
+# disabled for AWS: radio*	at udsbr?		# USB radio
+# disabled for AWS: uberry*	at uhub?		# Research In Motion BlackBerry
+# disabled for AWS: ugen*	at uhub?		# USB Generic driver
+# disabled for AWS: uath*	at uhub?		# Atheros AR5005UG/AR5005UX
+# disabled for AWS: ural*	at uhub?		# Ralink RT2500USB
+# disabled for AWS: rum*	at uhub?		# Ralink RT2501USB/RT2601USB
+# disabled for AWS: run*	at uhub?		# Ralink RT2700U/RT2800U/RT3000U
+# disabled for AWS: mtw*	at uhub?		# MediaTek MT7601U
+# disabled for AWS: otus*	at uhub?		# Atheros AR9001U
+# disabled for AWS: athn*	at uhub?		# Atheros AR9002U
+# disabled for AWS: zyd*	at uhub?		# Zydas ZD1211
+# disabled for AWS: upgt*	at uhub?		# Conexant/Intersil PrismGT SoftMAC USB
+# disabled for AWS: urtw*	at uhub?		# Realtek 8187
+# disabled for AWS: rsu*	at uhub?		# Realtek RTL8188SU/RTL8191SU/RTL8192SU
+# disabled for AWS: urtwn*	at uhub?		# Realtek RTL8188CU/RTL8192CU
+# disabled for AWS: udcf*	at uhub?		# Gude Expert mouseCLOCK
+# disabled for AWS: umbg*	at uhub?		# Meinberg Funkuhren USB5131/DCF600USB
+# disabled for AWS: umb*	at uhub?		# Mobile Broadband Interface Model
+# disabled for AWS: uthum*	at uhidev?		# TEMPerHUM sensor
+# disabled for AWS: ugold*	at uhidev?		# gold TEMPer sensor
+# disabled for AWS: utrh*	at uhidev?		# USBRH sensor
+# disabled for AWS: utwitch* at uhidev?		# YUREX BBU sensor
+# disabled for AWS: uow*	at uhub?		# Maxim/Dallas DS2490 1-Wire adapter
+# disabled for AWS: uoakrh*	at uhidev?		# Toradex OAK temp and rel humidity
+# disabled for AWS: uoaklux* at uhidev?		# Toradex OAK LUX
+# disabled for AWS: uoakv*	at uhidev?		# Toradex OAK 10V sensor
+# disabled for AWS: onewire* at uow?
+# disabled for AWS: uvideo*	at uhub?		# USB Video
+# disabled for AWS: video*	at uvideo?
+# disabled for AWS: utvfu*	at uhub?		# Fushicai Audio-Video Grabber
+# disabled for AWS: video*	at utvfu?
+# disabled for AWS: audio*	at utvfu?
+# disabled for AWS: udl*	at uhub?		# DisplayLink USB displays
+# disabled for AWS: wsdisplay* at udl?
+# disabled for AWS: bwfm*	at uhub?		# Broadcom FullMAC
+
+puc*	at pci?			# PCI "universal" communication device
+# disabled for AWS: com*	at cardbus?
+com*	at pci?
+
+# disabled for AWS: sdhc*	at pci?			# SD Host Controller
+# disabled for AWS: sdmmc*	at sdhc?		# SD/MMC bus
+# disabled for AWS: rtsx*	at pci?			# Realtek SD Card Reader
+# disabled for AWS: sdmmc*	at rtsx?		# SD/MMC bus
+# disabled for AWS: bwfm*	at sdmmc?		# Broadcom FullMAC
+
+isadma0	at isa?
+
+# disabled for AWS: option	WSDISPLAY_COMPAT_USL		# VT handling
+# disabled for AWS: option	WSDISPLAY_COMPAT_RAWKBD		# provide raw scancodes; needed for X11
+# disabled for AWS: option	WSDISPLAY_DEFAULTSCREENS=6	# initial number of text consoles
+
+# disabled for AWS: pckbc0		at isa? flags 0x00	# PC keyboard controller
+# disabled for AWS: pckbd*		at pckbc?		# PC keyboard
+# disabled for AWS: pms*		at pckbc?		# PS/2 mouse for wsmouse
+# disabled for AWS: vga0		at isa?
+# disabled for AWS: option		X86EMU			# to POST video cards
+# disabled for AWS: vga*		at pci?
+# disabled for AWS: wsdisplay0	at vga? console 1
+# disabled for AWS: wskbd*		at pckbd? mux 1
+# disabled for AWS: wsmouse*	at pms? mux 0
+
+#mmuagp*	at pchb?	# amd64 mmu agp.
+#agp*		at mmuagp?
+
+# disabled for AWS: inteldrm*	at pci? 	# Intel i915, i945 DRM driver
+# disabled for AWS: option		I915
+# disabled for AWS: intagp*		at inteldrm?
+# disabled for AWS: agp*		at intagp?
+# disabled for AWS: drm0		at inteldrm? primary 1
+# disabled for AWS: drm*		at inteldrm?
+# disabled for AWS: wsdisplay0	at inteldrm? primary 1
+# disabled for AWS: wsdisplay*	at inteldrm? mux -1
+# disabled for AWS: radeondrm*	at pci? 	# ATI Radeon DRM driver
+# disabled for AWS: drm0		at radeondrm? primary 1
+# disabled for AWS: drm*		at radeondrm?
+# disabled for AWS: wsdisplay0	at radeondrm? primary 1
+# disabled for AWS: wsdisplay*	at radeondrm? mux -1
+# disabled for AWS: amdgpu*		at pci?
+# disabled for AWS: drm0		at amdgpu? primary 1
+# disabled for AWS: drm*		at amdgpu?
+# disabled for AWS: wsdisplay0	at amdgpu? primary 1
+# disabled for AWS: wsdisplay*	at amdgpu? mux -1
+
+pcppi0		at isa?
+
+com0	at isa? port 0x3f8 irq 4	# standard PC serial ports
+com1	at isa? port 0x2f8 irq 3
+com2	at isa? port 0x3e8 irq 5
+com3	at isa? disable port 0x2e8 irq 9 # (conflicts with some video cards)
+
+# disabled for AWS: com*	at pcmcia?			# PCMCIA modems/serial ports
+com*	at puc?
+
+# options CY_HW_RTS
+cy*	at pci?				# PCI cyclom serial card
+#cz*	at pci?				# Cyclades-Z multi-port serial boards
+
+lpt0	at isa? port 0x378 irq 7	# standard PC parallel ports
+#lpt1	at isa? port 0x278
+#lpt2	at isa? port 0x3bc
+lpt*	at puc?
+
+# disabled for AWS: efifb0		at mainbus?		# EFI Framebuffer
+# disabled for AWS: wsdisplay0	at efifb?
+
+# disabled for AWS: ahc*	at pci?				# Adaptec 2940 SCSI controllers
+# disabled for AWS: jmb*	at pci?				# JMicron JMB36x controllers
+# disabled for AWS: ahci*	at jmb? flags 0x0000		# flags 0x0001 to force SATA 1 (1.5Gb/s)
+# disabled for AWS: pciide*	at jmb?
+# disabled for AWS: ahci*	at pci? flags 0x0000		# AHCI SATA controllers
+					# flags 0x0001 to force SATA 1 (1.5Gb/s)
+# disabled for AWS: sili*	at pci?				# Silicon Image 3124/3132/3531 SATA
+# disabled for AWS: ahd*	at pci?				# Adaptec 79?? SCSI controllers
+# disabled for AWS: arc*	at pci?				# Areca RAID Controller
+# disabled for AWS: mpi*	at pci?				# LSI Logic Message Passing Interface
+# disabled for AWS: mpii*	at pci?				# LSI Message Passing Interface II
+# disabled for AWS: gdt*	at pci?				# ICP Vortex GDT RAID controllers
+# disabled for AWS: twe*	at pci?				# 3ware Escalade RAID controllers
+#aac*	at pci?				# Adaptec FSA RAID controllers
+# disabled for AWS: ami*	at pci?				# AMI MegaRAID controllers
+# disabled for AWS: mfi*	at pci?				# LSI MegaRAID SAS controllers
+# disabled for AWS: mfii*	at pci?				# LSI MegaRAID SAS Fusion controllers
+#cac*	at pci?				# Compaq Smart ARRAY [234]* RAID controllers
+# disabled for AWS: ciss*	at pci?				# Compaq Smart ARRAY [56]* RAID controllers
+# disabled for AWS: iha*	at pci?				# Initio Ultra/UltraWide SCSI controllers
+# disabled for AWS: ips*	at pci?				# IBM ServeRAID controllers
+# disabled for AWS: qlw*	at pci?				# QLogic ISP SCSI
+# disabled for AWS: qla*	at pci?				# QLogic ISP 2[123]xx FibreChannel
+# disabled for AWS: qle*	at pci?				# QLogic ISP 2[45]xx FibreChannel
+# disabled for AWS: aic*	at pcmcia?			# PCMCIA Adaptec 152[02] SCSI
+# disabled for AWS: siop*	at pci?				# NCR 538XX SCSI controllers
+# disabled for AWS: adw*	at pci?				# AdvanSys ULTRA WIDE SCSI
+# disabled for AWS: pcscp*	at pci?				# AMD 53c974 PCscsi-PCI SCSI
+#trm*	at pci?				# Tekram DC-3x5U SCSI Controllers
+# disabled for AWS: vmwpvs*	at pci?				# VMware ParaVirtual SCSI
+nvme*	at pci?				# NVMe controllers
+# disabled for AWS: ufshci*	at pci?				# UFSHCI controllers
+
+scsibus* at scsi?
+sd*	at scsibus?			# SCSI disk drives
+# disabled for AWS: st*	at scsibus?			# SCSI tape drives
+# disabled for AWS: cd*	at scsibus?			# SCSI CD-ROM drives
+# disabled for AWS: ch*	at scsibus?			# SCSI autochangers
+# disabled for AWS: safte*	at scsibus?			# SCSI accessed fault-tolerant encl
+# disabled for AWS: ses*	at scsibus?			# SCSI enclosure services
+# disabled for AWS: uk*	at scsibus?			# unknown SCSI
+
+# disabled for AWS: mpath0	at root
+# disabled for AWS: emc*	at scsibus?
+# disabled for AWS: hds*	at scsibus?
+# disabled for AWS: rdac*	at scsibus?
+# disabled for AWS: sym*	at scsibus?
+
+# disabled for AWS: fdc0	at isa? port 0x3f0 irq 6 drq 2	# standard PC floppy controllers
+#fdc1	at isa? port 0x370
+# disabled for AWS: fd*	at fdc? flags 0x00
+
+# IDE controllers
+# disabled for AWS: pciide* at pci? flags 0x0000
+
+# disabled for AWS: wdc0	at isa? disable port 0x1f0 irq 14 flags 0x00
+# disabled for AWS: wdc1	at isa? disable port 0x170 irq 15 flags 0x00
+# disabled for AWS: wdc*	at pcmcia?
+
+# IDE hard drives
+# disabled for AWS: wd*	at wdc? flags 0x0000
+# disabled for AWS: wd*	at pciide? flags 0x0000
+
+# ATAPI<->SCSI
+# disabled for AWS: atapiscsi* at wdc?
+# disabled for AWS: atapiscsi* at pciide?
+
+# Networking devices
+# disabled for AWS: de*	at pci?				# DC21X4X-based ethernet
+# disabled for AWS: fxp*	at pci?				# EtherExpress 10/100B ethernet
+# disabled for AWS: fxp*	at cardbus?			# Intel PRO/100 ethernet
+# disabled for AWS: ne*	at pci?				# NE2000-compat ethernet
+# disabled for AWS: ep*	at pci?				# 3C59x ethernet
+# disabled for AWS: ne*	at pcmcia?			# PCMCIA based NE2000 ethernet
+# disabled for AWS: ep*	at pcmcia?			# PCMCIA based 3C5xx ethernet
+# disabled for AWS: sm*	at pcmcia?			# PCMCIA based sm ethernet
+# disabled for AWS: xe*	at pcmcia?			# Xircom ethernet
+# disabled for AWS: xl*	at pci?				# 3C9xx ethernet
+# disabled for AWS: xl*	at cardbus?			# 3C575/3C656 ethernet
+# disabled for AWS: rl*	at pci?				# Realtek 81[23]9 ethernet
+# disabled for AWS: rl*	at cardbus?			# Realtek 81[23]9 ethernet
+#mtd*	at pci?				# Myson MTD800/803/891
+# disabled for AWS: epic*	at pci?				# SMC EPIC/100 ethernet
+# disabled for AWS: vr*	at pci?				# VIA Rhine ethernet
+# disabled for AWS: sf*	at pci?				# Adaptec AIC-6915 ethernet
+# disabled for AWS: sis*	at pci?				# SiS 900/7016 ethernet
+# disabled for AWS: se*	at pci?				# SiS 190/191 ethernet
+# disabled for AWS: pcn*	at pci?				# AMD PCnet-PCI Ethernet
+# disabled for AWS: dc*	at pci?				# 21143, "tulip" clone ethernet
+# disabled for AWS: dc*	at cardbus?			# 21143, "tulip" clone ethernet
+# disabled for AWS: ti*	at pci?				# Alteon Tigon 1Gb ethernet
+# disabled for AWS: skc*	at pci?				# SysKonnect GEnesis 984x
+# disabled for AWS: sk*	at skc?				#  each port of above
+# disabled for AWS: mskc*	at pci?				# Marvell Yukon-2
+# disabled for AWS: msk*	at mskc?			#  each port of above
+# disabled for AWS: em*	at pci?				# Intel Pro/1000 ethernet
+# disabled for AWS: ixgb*	at pci?				# Intel Pro/10Gb ethernet
+# disabled for AWS: ix*	at pci?				# Intel 82598EB 10Gb ethernet
+# disabled for AWS: ixv*	at pci?				# Virtual Function of Intel 82599
+# disabled for AWS: ixl*	at pci?				# Intel Ethernet 700 Series
+# disabled for AWS: iavf*	at pci?				# Intel Ethernet Adaptive VF
+# disabled for AWS: ice*	at pci?				# Intel Ethernet 800 Series
+# disabled for AWS: myx*	at pci?				# Myricom Myri-10G 10Gb ethernet
+# disabled for AWS: oce*	at pci?				# Emulex OneConnect 10Gb ethernet
+# disabled for AWS: txp*	at pci?				# 3com 3CR990
+#nge*	at pci?				# NS DP83820/DP83821 GigE
+# disabled for AWS: bge*	at pci?				# Broadcom BCM57xx (aka Tigon3)
+# disabled for AWS: bnx*	at pci?				# Broadcom BCM5706/5708 GigE
+# disabled for AWS: re*	at pci?				# Realtek 8169/8169S/8110S
+# disabled for AWS: re*	at cardbus?			# Realtek 8169/8169S/8110S
+# disabled for AWS: rge*	at pci?				# Realtek 8125
+# disabled for AWS: stge*	at pci?				# Sundance TC9021 GigE
+#lge*	at pci?				# Level1 LXT1001 GigE
+# disabled for AWS: hme*	at pci?				# Sun Happy Meal
+# disabled for AWS: vge*	at pci?				# VIA VT612x
+# disabled for AWS: nfe*	at pci?				# NVIDIA nForce Ethernet
+# disabled for AWS: xge*	at pci?				# Neterion Xframe-I/II 10Gb ethernet
+# disabled for AWS: thtc*	at pci?				# Tehuti Networks 10Gb ethernet
+# disabled for AWS: tht*	at thtc?
+# disabled for AWS: gem*	at pci?				# Sun GEM 10/100/Gigabit
+# disabled for AWS: cas*	at pci?				# Sun Cassini 100/Gigabit
+# disabled for AWS: bce*	at pci?				# Broadcom BCM4401
+# disabled for AWS: vic*	at pci?				# VMware VMXnet virtual interface
+# disabled for AWS: vmx*	at pci?				# VMware VMXNET3 virtual interface
+# disabled for AWS: et*	at pci?				# Agere/LSI ET1310
+# disabled for AWS: age*	at pci?				# Attansic L1 Ethernet
+# disabled for AWS: alc*	at pci?				# Attansic L1C/L1D/L2C Ethernet
+# disabled for AWS: ale*	at pci?				# Attansic L1E Ethernet
+# disabled for AWS: lii*	at pci?				# Attansic L2 Ethernet
+# disabled for AWS: jme*	at pci?				# JMicron JMC250/JMC260 Ethernet
+# disabled for AWS: bnxt*	at pci?				# Broadcom BCM573xx, BCM574xx
+# disabled for AWS: dwqe*	at pci?				# Intel Elkhart Lake Ethernet
+# disabled for AWS: mcx*	at pci?				# Mellanox ConnectX-4
+# disabled for AWS: aq*	at pci?				# Aquantia aQtion Ethernet
+# disabled for AWS: igc*	at pci?				# Intel I225 Ethernet
+# disabled for AWS: ngbe*	at pci?				# WangXun WX1860 Ethernet
+
+# Wireless network cards
+# disabled for AWS: acx*	at pci?				# TI ACX100/ACX111 (802.11b/g)
+# disabled for AWS: acx*	at cardbus?			# TI ACX100/ACX111 (802.11b/g)
+# disabled for AWS: ath*	at pci?				# Atheros AR5k (802.11a/b/g)
+# disabled for AWS: ath*	at cardbus?			# Atheros AR5k (802.11a/b/g)
+# disabled for AWS: athn*	at pci?				# Atheros AR9k (802.11a/g/n)
+# disabled for AWS: athn*	at cardbus?			# Atheros AR9k (802.11a/g/n)
+# disabled for AWS: atw*	at pci?				# ADMtek ADM8211 (802.11)
+# disabled for AWS: atw*	at cardbus?			# ADMtek ADM8211 (802.11)
+# disabled for AWS: bwi*	at pci?				# Broadcom AirForce (802.11b/g)
+# disabled for AWS: bwi*	at cardbus?			# Broadcom AirForce (802.11b/g)
+# disabled for AWS: wi*	at pci?				# WaveLAN IEEE 802.11DS
+# disabled for AWS: wi*	at pcmcia?			# WaveLAN IEEE 802.11DS
+# disabled for AWS: an*	at pci?				# Aironet IEEE 802.11DS
+# disabled for AWS: an*	at pcmcia?			# Aironet IEEE 802.11DS
+# disabled for AWS: iwi*	at pci?				# Intel PRO/Wireless 2200BG/2915ABG
+# disabled for AWS: wpi*	at pci?				# Intel PRO/Wireless 3945ABG
+# disabled for AWS: iwn*	at pci?				# Intel WiFi Link 4965/5000/1000/6000
+# disabled for AWS: iwm*	at pci?				# Intel WiFi Link 7xxx
+# disabled for AWS: iwx*	at pci?				# Intel WiFi Link 22xxx
+# disabled for AWS: qwx*	at pci?				# Qualcomm 802.11ax
+#qwz*	at pci?				# Qualcomm 802.11be
+# disabled for AWS: ral*	at pci?				# Ralink RT2500/RT2501/RT2600
+# disabled for AWS: ral*	at cardbus?			# Ralink RT2500/RT2501/RT2600
+# disabled for AWS: rtw*	at pci?				# Realtek 8180
+# disabled for AWS: rtw*	at cardbus?			# Realtek 8180
+# disabled for AWS: rtwn*	at pci?				# Realtek 8188CE/8192CE
+# disabled for AWS: pgt*	at pci?				# Prism54 Full-MAC
+# disabled for AWS: pgt*	at cardbus?			# Prism54 Full-MAC
+# disabled for AWS: malo*	at pci?				# Marvell Libertas
+# disabled for AWS: malo*	at cardbus?			# Marvell Libertas
+# disabled for AWS: malo*	at pcmcia?			# Marvell 88W8385
+# disabled for AWS: mbg*	at pci?				# Meinberg Funkuhren radio clocks
+# disabled for AWS: bwfm*	at pci?				# Broadcom FullMAC
+
+# Media Independent Interface (mii) drivers
+# disabled for AWS: exphy*	at mii?				# 3Com internal PHYs
+# disabled for AWS: inphy*	at mii?				# Intel 82555 PHYs
+# disabled for AWS: iophy*	at mii?				# Intel 82553 PHYs
+# disabled for AWS: icsphy*	at mii?				# ICS 1890 PHYs
+# disabled for AWS: lxtphy*	at mii?				# Level1 LXT970 PHYs
+# disabled for AWS: nsphy*	at mii?				# NS and compatible PHYs
+# disabled for AWS: nsphyter*	at mii?			# NS and compatible PHYs
+# disabled for AWS: qsphy*	at mii?				# Quality Semi QS6612 PHYs
+# disabled for AWS: luphy*	at mii?				# Lucent LU6612 PHY
+# disabled for AWS: sqphy*	at mii?				# Seeq 8x220 PHYs
+# disabled for AWS: rlphy* at mii?				# Realtek 8139 internal PHYs
+# disabled for AWS: mtdphy* at mii?				# Myson MTD972 PHYs
+# disabled for AWS: dcphy*	at mii?				# Digital Clone PHYs
+# disabled for AWS: acphy*	at mii?				# Altima AC101 PHYs
+# disabled for AWS: amphy*	at mii?				# AMD 79C873 PHYs
+# disabled for AWS: tqphy*	at mii?				# TDK 78Q212x PHYs
+# disabled for AWS: bmtphy*	at mii?				# Broadcom 10/100 PHYs
+# disabled for AWS: brgphy*	at mii?				# Broadcom Gigabit PHYs
+# disabled for AWS: eephy* at mii?				# Marvell 88E1000 series PHY
+# disabled for AWS: xmphy*	at mii?				# XaQti XMAC-II PHYs
+# disabled for AWS: nsgphy*	at mii?				# NS gigabit PHYs
+# disabled for AWS: rgephy*	at mii?				# Realtek 8169S/8110S PHY
+# disabled for AWS: urlphy*	at mii?				# Realtek RTL8150L internal PHY
+# disabled for AWS: ciphy*	at mii?				# Cicada CS8201 10/100/1000 copper PHY
+# disabled for AWS: gentbi*	at mii?				# Generic 1000BASE-X ten-bit PHY
+# disabled for AWS: etphy*	at mii?				# Agere/LSI ET1011 TruePHY
+# disabled for AWS: jmphy*	at mii?				# JMicron JMP202/JMP211 PHYs
+# disabled for AWS: atphy*	at mii?				# Attansic F1 PHYs
+# disabled for AWS: ipgphy*	at mii?				# IC Plus IP1000A PHYs
+# disabled for AWS: ukphy*	at mii?				# "unknown" PHYs
+
+# disabled for AWS: eap*	at pci?				# Ensoniq AudioPCI S5016
+# disabled for AWS: envy*	at pci?				# VIA Envy24 (aka ICE1712)
+#eso*	at pci?				# ESS Solo-1 PCI AudioDrive
+#sv*	at pci?				# S3 SonicVibes (S3 617)
+#neo*	at pci?				# NeoMagic 256AV/ZX
+# disabled for AWS: cmpci*	at pci?				# C-Media CMI8338/8738
+# disabled for AWS: auacer*	at pci?				# Acer Labs M5455
+# disabled for AWS: auich*	at pci? flags 0x0000		# i82801 ICH AC'97 audio
+# disabled for AWS: auixp*	at pci?				# ATI IXP AC'97 Audio
+#autri*	at pci? flags 0x0000		# Trident 4D WAVE
+# disabled for AWS: auvia*	at pci?				# VIA VT82C686A
+# disabled for AWS: azalia*	at pci?				# High Definition Audio
+# disabled for AWS: clcs*	at pci?				# CS4280 CrystalClear audio
+#clct*	at pci?				# CS4281 CrystalClear audio
+#fms*	at pci?				# Forte Media FM801
+#maestro* at pci?			# ESS Maestro PCI
+#esa*	at pci?				# ESS Maestro3 PCI
+# disabled for AWS: yds*	at pci? flags 0x0000		# Yamaha YMF Audio
+# disabled for AWS: emu*	at pci?				# SB Live!
+# disabled for AWS: mpu*	at isa? port 0x330
+
+# MIDI support
+#midi*	at autri?
+# disabled for AWS: midi*	at eap?
+# disabled for AWS: midi*	at envy?
+# disabled for AWS: midi*	at mpu?
+
+# disabled for AWS: spkr0	at pcppi?		# PC speaker
+
+# Audio Support
+# disabled for AWS: audio*	at eap?
+# disabled for AWS: audio*	at envy?
+#audio*	at eso?
+#audio*	at sv?
+#audio*	at neo?
+# disabled for AWS: audio*	at cmpci?
+# disabled for AWS: audio*	at clcs?
+#audio*	at clct?
+# disabled for AWS: audio*	at auacer?
+# disabled for AWS: audio*	at auich?
+# disabled for AWS: audio*	at auixp?
+#audio*	at autri?
+# disabled for AWS: audio*	at auvia?
+# disabled for AWS: audio*	at azalia?
+#audio*	at fms?
+# disabled for AWS: audio*	at uaudio?
+#audio*	at maestro?
+#audio*	at esa?
+# disabled for AWS: audio*	at yds?
+# disabled for AWS: audio*	at emu?
+
+# disabled for AWS: bktr0	at pci?
+
+# FM-Radio support
+# disabled for AWS: radio*	at bktr?
+
+#wdt0	at pci?			# Ind Computer Source PCI-WDT50x driver
+
+# disabled for AWS: xspd0	at pci?			# XenSource Platform Device
+
+# 1-Wire devices
+# disabled for AWS: option ONEWIREVERBOSE
+# disabled for AWS: owid*	at onewire?		# ID
+# disabled for AWS: owsbm*	at onewire?		# Smart Battery Monitor
+# disabled for AWS: owtemp* at onewire?		# Temperature
+# disabled for AWS: owctr*	at onewire?		# Counter device
+
+pseudo-device	pctr		1
+pseudo-device	nvram		1
+pseudo-device	hotplug		1	# devices hot plugging
+pseudo-device	dt
+
+# mouse & keyboard multiplexor pseudo-devices
+# disabled for AWS: pseudo-device	wsmux		2
+
+# Virtio devices
+virtio*		at pci?		# Virtio PCI device
+vioblk*		at virtio?	# Virtio block device
+vio*		at virtio?	# Virtio network device
+# disabled for AWS: viomb*		at virtio?	# Virtio memory ballooning device
+# disabled for AWS: viornd*		at virtio?	# Virtio entropy device
+# disabled for AWS: vioscsi*	at virtio?	# Virtio SCSI device
+#viocon*	at virtio?	# Virtio console device
+# disabled for AWS: vmmci*		at virtio?	# VMM control interface
+# disabled for AWS: viogpu*	at virtio?	# VirtIO GPU device
+# disabled for AWS: wsdisplay0	at viogpu? console 1
+# disabled for AWS: wsdisplay*	at viogpu? mux -1
+
+# AWS Nitro
+ena*		at pci?			# Amazon Elastic Network Adapter

@@ -1,0 +1,15 @@
+consinit() calls simplefb_init_cons() unconditionally, so the kernel does
+not link once the AWS config drops the framebuffer stack. Removing the call
+costs nothing on EC2: Nitro arm64 instances have no framebuffer device and
+the console is on the serial port anyway.
+
+--- sys/arch/arm64/arm64/machdep.c
++++ sys/arch/arm64/arm64/machdep.c
+@@ -205,7 +205,6 @@ consinit(void)
+ 	mvuart_init_cons();
+ 	pluart_init_cons();
+ 	qcuart_init_cons();
+-	simplefb_init_cons(&arm64_bs_tag);
+ }
+ 
+ void
