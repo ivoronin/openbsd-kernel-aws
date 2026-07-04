@@ -1,0 +1,87 @@
+--- sys/dev/pci/com_pci.c
++++ sys/dev/pci/com_pci.c
+@@ -19,6 +19,7 @@
+ #include <sys/systm.h>
+ #include <sys/tty.h>
+ 
++#include <dev/cons.h>
+ #include <dev/pci/pcidevs.h>
+ #include <dev/pci/pcireg.h>
+ #include <dev/pci/pcivar.h>
+@@ -65,6 +66,7 @@
+ 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_APOLLOLAKE_UART_2 },
+ 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_APOLLOLAKE_UART_3 },
+ 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_APOLLOLAKE_UART_4 },
++	{ PCI_VENDOR_AMAZON, PCI_PRODUCT_AMAZON_EC2_SERIAL },
+ };
+ 
+ int
+@@ -81,27 +83,36 @@
+ 	pci_intr_handle_t ih;
+ 	const char *intrstr;
+ 	uint64_t freq, m, n;
++	pcireg_t maptype = PCI_MAPREG_MEM_TYPE_64BIT;
+ 	uint32_t caps;
++	int (*intr)(void *) = com_pci_intr_designware;
++	int is_amazon;
+ 
++	is_amazon = (PCI_VENDOR(pa->pa_id) == PCI_VENDOR_AMAZON);
++	if (is_amazon)
++		maptype = PCI_MAPREG_TYPE_MEM;
++
+ 	sc->sc_pc = pa->pa_pc;
+ 	sc->sc_id = pa->pa_id;
+ 	sc->sc.sc_frequency = COM_FREQ;
+-	sc->sc.sc_uarttype = COM_UART_16550;
+-	sc->sc.sc_reg_width = 4;
+-	sc->sc.sc_reg_shift = 2;
++	if (is_amazon) {
++		/* let com_attach_subr probe the UART type and FIFO */
++		sc->sc.sc_reg_width = 1;
++		sc->sc.sc_reg_shift = 0;
++	} else {
++		sc->sc.sc_uarttype = COM_UART_16550;
++		sc->sc.sc_reg_width = 4;
++		sc->sc.sc_reg_shift = 2;
++	}
+ 
+ 	pci_set_powerstate(pa->pa_pc, pa->pa_tag, PCI_PMCSR_STATE_D0);
+ 
+-	if (pci_mapreg_map(pa, PCI_MAPREG_START, PCI_MAPREG_MEM_TYPE_64BIT, 0,
++	if (pci_mapreg_map(pa, PCI_MAPREG_START, maptype, 0,
+ 	    &sc->sc.sc_iot, &sc->sc.sc_ioh, &sc->sc.sc_iobase, &sc->sc_ios, 0)) {
+ 		printf(": can't map mem space\n");
+ 		return;
+ 	}
+ 
+-	/*
+-	 * Once we are adding non-Intel and non-LPSS device it will make
+-	 * sense to add a second table and use pci_matchbyid().
+-	 */
+ 	if (PCI_VENDOR(pa->pa_id) == PCI_VENDOR_INTEL) {
+ 		caps = HREAD4(sc, LPSS_CAPS);
+ 		if (((caps & LPSS_CAPS_TYPE_MASK) >> LPSS_CAPS_TYPE_SHIFT) !=
+@@ -126,6 +137,14 @@
+ 			freq /= n;
+ 		}
+ 		sc->sc.sc_frequency = freq;
++	} else if (is_amazon) {
++		intr = comintr;
++		if (cn_tab != NULL && cn_tab->cn_dev == NODEV) {
++			SET(sc->sc.sc_hwflags, COM_HW_CONSOLE);
++			SET(sc->sc.sc_swflags, COM_SW_SOFTCAR);
++			comconsfreq = sc->sc.sc_frequency;
++			comconsrate = B115200;
++		}
+ 	}
+ 
+ 	if (pci_intr_map_msi(pa, &ih) != 0 && pci_intr_map(pa, &ih) != 0) {
+@@ -136,7 +155,7 @@
+ 
+ 	intrstr = pci_intr_string(pa->pa_pc, ih);
+ 	sc->sc_ih = pci_intr_establish(pa->pa_pc, ih, IPL_TTY,
+-	    com_pci_intr_designware, &sc->sc, sc->sc.sc_dev.dv_xname);
++	    intr, &sc->sc, sc->sc.sc_dev.dv_xname);
+ 	if (sc->sc_ih == NULL) {
+ 		bus_space_unmap(sc->sc.sc_iot, sc->sc.sc_ioh, sc->sc_ios);
+ 		printf(": can't establish interrupt");

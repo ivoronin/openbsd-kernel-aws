@@ -22,6 +22,7 @@
 +product AMAZON EC2_HB 0x0200 EC2 Host
 +product AMAZON ENA_PF 0x0ec2 Elastic Network Adapter (PF)
 +product AMAZON EC2_VGA 0x1111 EC2 VGA
++product AMAZON EC2_SERIAL 0x8250 EC2 serial console
 +product AMAZON ENA_PF_LLQ 0x1ec2 Elastic Network Adapter (PF, LLQ)
 +product AMAZON EBS_NVME 0x8061 NVMe EBS Controller
 +product AMAZON ENA 0xec20 Elastic Network Adapter (VF)
