@@ -1,0 +1,19 @@
+The ACPI attachment for plgpio(4) (see the openbsd-driver-plgpio-acpi
+driver bundle in builds/*.mk) cannot be declared in the MI files.acpi
+the way pluart's is: the plgpio device itself is declared in files.fdt,
+which only arm64 includes, while files.acpi is also included by amd64 -
+config(8) there would fail on an attachment for an unknown device.
+Declare the attachment in the arm64-only file list instead.
+
+--- sys/arch/arm64/conf/files.arm64
++++ sys/arch/arm64/conf/files.arm64
+@@ -291,6 +291,9 @@
+ file	arch/arm64/arm64/acpi_machdep.c		acpi_fdt
+ file	arch/arm64/dev/acpicpu.c		acpicpu
+ 
++attach	plgpio at acpi with plgpio_acpi
++file	dev/acpi/plgpio_acpi.c			plgpio_acpi
++
+ define	acpiiort {}
+ device	acpiiort: acpiiort
+ attach	acpiiort at acpi
