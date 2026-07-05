@@ -1,3 +1,32 @@
+OpenBSD's nvme(4) hardcodes 128-entry queues and never reads CAP.MQES,
+the queue size limit the controller advertises. Nitro EBS controllers
+advertise only ~32 entries (measured on Graviton), which breaks the
+driver in three places, all addressed here:
+
+1. nvme_attach creates the I/O queue with 128 entries; the controller
+   rejects ADD_IOCQ with "Invalid Queue Size" (SCT 1, SC 0x02) and the
+   disk never attaches ("nvme0: unable to create io q"). The queue is
+   sized to MIN(128, NVME_CAP_MQES(cap)) instead.
+
+2. With the queue that small, sc_openings = 64 becomes inconsistent:
+   the SCSI layer is told it may keep 64 commands in flight, but the
+   submission ring holds at most q_entries - 1 and nvme_q_submit never
+   checks for a full ring - the tail laps the head, commands get
+   completed twice and the kernel faults on poisoned scsi_xfer
+   pointers (seen on a t4g.medium during library reordering at boot).
+   sc_openings is clamped to q_entries - 1; saa.saa_openings picks up
+   the clamped value.
+
+3. nvme_resume re-creates the I/O queue from scratch with the same
+   hardcoded 128, so the first suspend/resume cycle would hit the
+   attach-time failure again and lose the disk. Same clamp there,
+   with CAP re-read before the allocation.
+
+The admin queue stays at 128 on purpose: CAP.MQES applies to the I/O
+queues the host creates, while the admin queue is sized via the AQA
+register with its own 4096-entry ceiling, and Nitro accepts 128 there.
+NetBSD's descendant of this driver likewise clamps only the I/O queues.
+
 --- sys/dev/ic/nvme.c
 +++ sys/dev/ic/nvme.c
 @@ -374,7 +374,8 @@
@@ -5,6 +34,37 @@
  	nccbs = 64;
  
 -	sc->sc_q = nvme_q_alloc(sc, NVME_IO_Q, 128, sc->sc_dstrd);
++	sc->sc_q = nvme_q_alloc(sc, NVME_IO_Q, MIN(128, NVME_CAP_MQES(cap)),
++	    sc->sc_dstrd);
+ 	if (sc->sc_q == NULL) {
+ 		printf("%s: unable to allocate io q\n", DEVNAME(sc));
+ 		goto disable;
+@@ -385,6 +386,10 @@
+ 		goto free_q;
+ 	}
+ 
++	/* the submission ring holds at most q_entries - 1 commands */
++	if (sc->sc_openings > sc->sc_q->q_entries - 1)
++		sc->sc_openings = sc->sc_q->q_entries - 1;
++
+ #ifdef HIBERNATE
+ 	sc->sc_hib_q = nvme_q_alloc(sc, NVME_HIB_Q, 4, sc->sc_dstrd);
+ 	if (sc->sc_hib_q == NULL) {
+@@ -457,6 +462,8 @@
+ int
+ nvme_resume(struct nvme_softc *sc)
+ {
++	u_int64_t cap;
++
+ 	if (nvme_disable(sc) != 0) {
+ 		printf("%s: unable to disable controller\n", DEVNAME(sc));
+ 		return (1);
+@@ -472,7 +479,9 @@
+ 		return (1);
+ 	}
+ 
+-	sc->sc_q = nvme_q_alloc(sc, NVME_IO_Q, 128, sc->sc_dstrd);
++	cap = nvme_read8(sc, NVME_CAP);
 +	sc->sc_q = nvme_q_alloc(sc, NVME_IO_Q, MIN(128, NVME_CAP_MQES(cap)),
 +	    sc->sc_dstrd);
  	if (sc->sc_q == NULL) {
