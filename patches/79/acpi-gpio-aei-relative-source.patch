@@ -1,0 +1,30 @@
+Resolve GPIO event resource sources with relative ACPI namespace lookup.
+An _AEI GpioInt resource may name the controller with a relative source
+such as "GPO0" while the event parser is already running on the GPO0
+device node.  Strict lookup from that node searches for a child named
+GPO0 and fails, so the GPIO event is never armed.  Use aml_searchrel()
+so the normal upward relative lookup finds the controller node.
+
+ACPI 6.6 section 19.6.57 says the GpioInt ResourceSource can be a
+fully-qualified name, a relative name, or a name segment that uses the
+namespace search rules.  Section 5.6.5.2 also places _AEI under the GPIO
+controller device scope.  Treating the ResourceSource as a strict child
+of that scope is therefore too narrow for valid firmware.
+
+--- sys/dev/acpi/acpi.c
++++ sys/dev/acpi/acpi.c
+@@ -993,13 +993,13 @@ acpi_gpio_parse_events(int crsidx, union acpi_resource *crs, void *arg)
+ {
+ 	struct aml_node *devnode = arg;
+ 	struct aml_node *node;
+ 	uint16_t pin;
+ 
+ 	switch (AML_CRSTYPE(crs)) {
+ 	case LR_GPIO:
+-		node = aml_searchname(devnode,
++		node = aml_searchrel(devnode,
+ 		    (char *)&crs->pad[crs->lr_gpio.res_off]);
+ 		pin = *(uint16_t *)&crs->pad[crs->lr_gpio.pin_off];
+ 		if (crs->lr_gpio.type == LR_GPIO_INT &&
+ 		    node && node->gpio && node->gpio->intr_establish) {
+ 			struct acpi_gpio *gpio = node->gpio;
