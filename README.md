@@ -4,11 +4,13 @@ OpenBSD kernel bundle for AWS Nitro. Kernels are built from a trimmed `AWS`
 config (see `config/`): GENERIC with drivers and options that make no sense
 on Nitro instances disabled.
 
-It adds the Amazon ENA network driver and the OpenBSD kernel changes needed on Nitro:
-- Amazon PCI product IDs
-- MSI on Amazon host bridges
-- NVMe queue sizing capped to controller limits
-- com(4) attachment for the EC2 PCI serial device, so the EC2 serial console works
+It imports the ENA and plgpio ACPI driver bundles and carries a small Nitro
+compatibility patchset:
+- Amazon PCI IDs and ENA wiring
+- Amazon host-bridge MSI and Nitro EBS NVMe queue fixes
+- EC2 PCI serial console support
+- plgpio ACPI support and GPIO event lookup for EC2 power-button events
+- arm64 PCI bridge interrupt crash fix for Graviton4/5
 
 The image assembly layer lives in [ivoronin/openbsd-cloudimg](https://github.com/ivoronin/openbsd-cloudimg).
 
