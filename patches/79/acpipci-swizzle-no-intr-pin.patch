@@ -1,0 +1,35 @@
+acpipci_intr_swizzle() indexes pa_bridgeih[swizpin - 1] where
+swizpin = PPB_INTERRUPT_SWIZZLE(pa_rawintrpin, dev) = (((pin + dev - 1) % 4) + 1).
+A downstream/hotplug PCIe bridge whose config Interrupt Pin register reads 0
+(PCI_INTERRUPT_PIN_NONE) at device 0 yields swizpin 0, so the access reads
+pa_bridgeih[-1] - the 32 bytes immediately before the parent bridge's sc_ih[4],
+i.e. its {dv_parent, sc_tag} - producing a bogus pci_intr_handle (ih_pc = the
+parent bus's pci_softc, ih_dmat = a pcitag, ih_type = a nonzero fragment).
+acpipci_intr_establish then sees ih_type != PCI_INTX, routes into the MSI path,
+and dereferences ih_pc as a chipset - panic (PC-align / bad load).
+
+This bites AWS Graviton4/5 (c8g/c9g): the third bridge down a hotplug ppb chain
+(ppb0->pci2->ppb1->pci3->ppb2) is the only one with Slot-Implemented set, a
+non-NULL pa_bridgeih (depth >= 2), rawintrpin 0, and no usable MSI cap, so it
+alone runs the swizzle fallback and hits the -1 index; it panics attaching that
+bridge, before ENA (on a deeper root) is ever reached. c7g (flat, no chain)
+never runs this path. A function with no interrupt pin has nothing to swizzle -
+bail before computing swizpin. Present in 7.9 and -current; upstreamable.
+
+--- sys/arch/arm64/dev/acpipci.c
++++ sys/arch/arm64/dev/acpipci.c
+@@ -463,6 +463,14 @@
+ 	pcireg_t id;
+ 
+ 	if (pa->pa_bridgeih == NULL)
++		return -1;
++
++	/*
++	 * A function with no interrupt pin has nothing to swizzle; bail
++	 * before PPB_INTERRUPT_SWIZZLE() turns pin 0 into swizpin 0 and the
++	 * pa_bridgeih[swizpin - 1] access below reads out of bounds.
++	 */
++	if (pa->pa_rawintrpin == PCI_INTERRUPT_PIN_NONE)
+ 		return -1;
+ 
+ 	pci_decompose_tag(pa->pa_pc, pa->pa_tag, NULL, &dev, NULL);
