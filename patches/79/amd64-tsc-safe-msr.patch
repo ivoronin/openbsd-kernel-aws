@@ -1,0 +1,42 @@
+The AMD TSC frequency shortcut assumes that all family 10h+ CPUs expose
+both HWCR and PStateDef MSRs to the kernel. On AWS Nitro AMD EPYC
+instances HWCR is readable and TscFreqSel is set, but PStateDef(0)
+raises #GP during early boot. That panics the kernel in tsc_identify()
+before device probing starts.
+
+These MSRs are only an optimization for deriving the TSC frequency
+without calibration. OpenBSD already has rdmsr_safe(), so treat an
+unreadable register as "cannot derive the frequency from MSRs" and fall
+back to the existing calibration path.
+
+--- sys/arch/amd64/amd64/tsc.c
++++ sys/arch/amd64/amd64/tsc.c
+@@ -102,7 +102,7 @@
+ uint64_t
+ tsc_freq_msr(struct cpu_info *ci)
+ {
+-	uint64_t base, def, divisor, multiplier;
++	uint64_t base, def, divisor, hwcr, multiplier;
+ 
+ 	if (ci->ci_vendor != CPUV_AMD)
+ 		return 0;
+@@ -114,7 +114,8 @@
+ 	 */
+ 	if (ci->ci_family < 0x10)
+ 		return 0;
+-	if (!ISSET(rdmsr(MSR_HWCR), HWCR_TSCFREQSEL))
++	if (rdmsr_safe(MSR_HWCR, &hwcr) != 0 ||
++	    !ISSET(hwcr, HWCR_TSCFREQSEL))
+ 		return 0;
+ 
+ 	/*
+@@ -123,7 +124,8 @@
+ 	 * If the En bit isn't set, the register doesn't define a valid
+ 	 * P-state.
+ 	 */
+-	def = rdmsr(MSR_PSTATEDEF(0));
++	if (rdmsr_safe(MSR_PSTATEDEF(0), &def) != 0)
++		return 0;
+ 	if (!ISSET(def, PSTATEDEF_EN))
+ 		return 0;
+ 
