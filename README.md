@@ -7,10 +7,13 @@ on Nitro instances disabled.
 It imports the ENA and plgpio ACPI driver bundles and carries a small Nitro
 compatibility patchset:
 - Amazon PCI IDs and ENA wiring
-- Amazon host-bridge MSI and Nitro EBS NVMe queue fixes
+- EC2 PCIe MSI/MSI-X enablement for ACPI 1.0 instances and Amazon bridge hierarchies
+- Nitro EBS NVMe queue fixes
+- safe AMD EPYC TSC MSR probing for Nitro
 - EC2 PCI serial console support
 - plgpio ACPI support and GPIO event lookup for EC2 power-button events
 - arm64 PCI bridge interrupt crash fix for Graviton4/5
+- arm64 ACPI serial console register-layout fix
 
 The image assembly layer lives in [ivoronin/openbsd-cloudimg](https://github.com/ivoronin/openbsd-cloudimg).
 
