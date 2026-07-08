@@ -1,0 +1,26 @@
+Root cause: arm64 efiboot translates the ACPI SPCR serial console into a
+synthetic FDT node, and that translation can describe an EC2 16550 console as a
+DesignWare-style shifted-register console.  The kernel then copies that FDT
+register layout into comcons_reg_width/comcons_reg_shift, so polled console
+status reads go to the wrong MMIO offsets even though writes to register 0 still
+work.
+
+This is a kernel-bundle-side workaround.  The cleaner source-of-truth fix
+belongs in efiboot's SPCR-to-FDT translation, but this repository ships
+kernels, not bootloader bits.  Keep the correction here narrow: only the
+synthetic ACPI FDT console and only the snps,dw-apb-uart path.
+
+--- sys/dev/fdt/com_fdt.c
++++ sys/dev/fdt/com_fdt.c
+@@ -83,6 +83,11 @@
+ 
+ 	comcons_reg_width = OF_getpropint(stdout_node, "reg-io-width", width);
+ 	comcons_reg_shift = OF_getpropint(stdout_node, "reg-shift", shift);
++	if (OF_is_compatible(OF_peer(0), "openbsd,acpi") &&
++	    OF_is_compatible(stdout_node, "snps,dw-apb-uart")) {
++		comcons_reg_width = 1;
++		comcons_reg_shift = 0;
++	}
+ 
+ 	comconsiot = fdt_cons_bs_tag;
+ 	if (bus_space_map(comconsiot, reg.addr, reg.size, 0, &comconsioh))
